@@ -1,8 +1,7 @@
-from datetime import datetime
 from word_counter import word_counter
 
 
-# Собирает все слова в 1 общий словарь
+# Group all words into 1 common dict
 def word_grouper(word_dicts):
     from collections import Counter
 
@@ -12,20 +11,21 @@ def word_grouper(word_dicts):
     return c
 
 
-start = datetime.now()
+mode = input()
+all_words = []
+if mode == 'test':
+    start, end = int(input()), int(input())
+    all_words = word_counter('docs/utf8/', [i for i in range(start, end)])
+elif mode == 'production':
+    all_words = word_counter('docs/utf8/', [i for i in input().split()])
 
-all_words = word_counter(int(input()))
 
-# Записывает в файл с номером, соответствующим номеру словаря в списке, слова
-# из соответствующего словаря через символ табуляции в формате word count
-
-
+# Makes answers as files
 def file_maker(word_dicts: list):
-    for file in range(len(word_dicts)):
-        with open(f'output/{file + 100}.txt', 'w+', encoding='UTF8') as res_file:
-            for key in word_dicts[file]:
-                res_file.write(key + '\t' + str(word_dicts[file][key]) + '\n')
+    for word_dict, filename in word_dicts:
+        with open(f'output/{filename}.txt', 'w+', encoding='UTF8') as res_file:
+            for key in word_dict:
+                res_file.write(key + '\t' + str(word_dict[key]) + '\n')
 
 
 file_maker(list(all_words))
-print((datetime.now() - start).seconds)

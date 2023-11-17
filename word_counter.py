@@ -1,4 +1,4 @@
-def word_counter(file_count: int):
+def word_counter(goal_dir: str, filenames: list):
     import pymorphy2
     from pymystem3 import Mystem
 
@@ -14,13 +14,14 @@ def word_counter(file_count: int):
     tags_blacklist = ['PREP', 'CONJ', 'PRCL']
     tags_whitelist = ['NOUN', 'VERB', 'ADJF']
 
-    def text_modifier(n: int) -> list:
+    def text_modifier(filenames_list: list) -> list:
         break_symbol = '☎'
         all_lines = ''
-        for file_num in range(100, n):
-            filename = str(file_num)
-            path = 'docs/utf8/'
-            with open(path + filename, 'r', encoding='UTF8') as text_file:
+        for filename in filenames_list:
+            filename = str(filename)
+            # if '.txt' not in filename:
+            #     filename += '.txt'
+            with open(goal_dir + filename, 'r', encoding='UTF8') as text_file:
                 a = [line.strip().upper() for line in text_file.readlines()]
                 chars_to_check = chars_finder(filename)
                 for line in range(len(a)):
@@ -76,6 +77,8 @@ def word_counter(file_count: int):
 
         return words
 
-    for text in text_modifier(file_count + 100):
+    file_number = 0
+    for text in text_modifier(filenames):
         result = word_counts(text)
-        yield result
+        yield result, filenames[file_number]
+        file_number += 1
