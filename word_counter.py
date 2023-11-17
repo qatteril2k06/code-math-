@@ -1,76 +1,85 @@
-import pymorphy2
-from pprint import pprint
+def word_counter(file_count):
+    import pymorphy2
+    from pymystem3 import Mystem
 
+    morph = pymorphy2.MorphAnalyzer()
+    mystem = Mystem()
 
-morph = pymorphy2.MorphAnalyzer()
+    words_blacklist = ['мой', 'твой', 'свой', 'наш', 'ваш', 'его', 'её', 'их',
+                       'сам', 'самый', 'весь', 'всякий', 'каждый', 'любой', 'другой', 'иной',
+                       'всяческий', 'всяк', 'тот', 'этот', 'такой', 'таков', 'сей', 'оный',
+                       'какой', 'который', 'чей', 'никакой', 'ничей', 'некоторый', 'некий', 'какой-то']
+    tags_blacklist = ['PREP', 'CONJ', 'PRCL']
 
+    def text_modifier(n):
+        break_symbol = '☎'
+        all_lines = ''
+        for file_num in range(100, n):
+            filename = str(file_num)
+            path = 'docs/utf8/'
+            with open(path + filename, 'r', encoding='UTF8') as text_file:
+                a = [line.strip().upper() for line in text_file.readlines()]
+                chars_to_check = chars_finder(filename)
+                for line in range(len(a)):
+                    for char in chars_to_check:
+                        a[line] = a[line].replace(char, ' ')
+                    all_lines += a[line]
+            all_lines += break_symbol
+        all_lines = ' '.join(mystem.lemmatize(all_lines))
+        return all_lines.split(break_symbol)[:-1]
 
-# Подсчитывает слова в файле
-# Возвращает словарь word: count
-def word_counter(filename):
-    chars = ['.', ',', '?', '!', '(', ')', '”', '“', ':', '"', "'", ';', '«', '»']
-    path = 'docs/utf8/'
-    with open(path + filename, 'r', encoding='UTF8') as text_file:
-        a = [line.strip().upper() for line in text_file.readlines()]
-        for line in range(len(a)):
-            for char in chars:
-                a[line] = a[line].replace(char, ' ' + char + ' ')
-    words = {}
+    def chars_finder(filename):
+        chars_to_check = set()
+        path = 'docs/utf8/'
+        with open(path + filename, 'r', encoding='UTF8') as text_file:
+            a = [line.strip().upper() for line in text_file.readlines()]
+            for line in range(len(a)):
+                for char in a[line]:
+                    if not char.isalpha():
+                        chars_to_check.add(char)
+        return chars_to_check
 
-    for line in a:
+    def line_parser(line):
+        res = []
         for word in line.split():
-            word = morph.parse(word)[0].normal_form
             if word.isalpha():
-                if morph.parse(word)[0].tag.POS in ['NOUN', 'ADJF'] or all([65 <= ord(i) <= 90 for i in word.upper()]):
-                    word = word.upper().replace('Ё', 'Е')
-                    blacklist = ['МОЙ', 'ТВОЙ', 'СВОЙ', 'НАШ', 'ВАШ', 'ЕГО', 'ЕЁ',
-                                 'ИХ', 'САМ', 'САМЫЙ', 'ВЕСЬ', 'ВСЯКИЙ', 'КАЖДЫЙ',
-                                 'ЛЮБОЙ', 'ДРУГОЙ', 'ИНОЙ', 'ВСЯЧЕСКИЙ', 'ВСЯК',
-                                 'ТОТ', 'ЭТОТ', 'ТАКОЙ', 'ТАКОВ', 'СЕЙ', 'ОНЫЙ',
-                                 'КАКОЙ', 'КОТОРЫЙ', 'ЧЕЙ', 'НИКАКОЙ', 'НИЧЕЙ',
-                                 'НЕКОТОРЫЙ', 'НЕКИЙ', 'КАКОЙ-ТО']
-                    if word not in blacklist:
-                        if word not in words.keys():
-                            words[word] = 0
-                        words[word] += 1
+                word = word.upper().replace('Ё', 'Е')
+                res.append(word)
+        return res
 
-    # Здесь добавляется процентное содержание слова в тексте, но пока откажемся от этой идеи
-    # words_count = sum([i for i in words.values()])
-    # for word in words.keys():
-    #     words[word][1] = words[word][0] / words_count
+    def word_checker(word: str) -> bool:
+        if not word.isalpha():
+            return False
+        if word in words_blacklist:
+            return False
+        if morph.parse(word)[0].tag.POS in tags_blacklist:
+            return False
+        return True
 
-    return words
+    # Подсчитывает слова в файле
+    # Возвращает словарь word: count
+    def word_counts(file_text):
+        words = {}
+        all_words_in_file = file_text.split()
+        for word in all_words_in_file:
+            if word_checker(word):
+                word = word.upper()
+                try:
+                    words[word] += 1
+                except KeyError:
+                    words[word] = 1
 
+        # Здесь добавляется процентное содержание слова в тексте, но пока откажемся от этой идеи
+        # words_count = sum([i for i in words.values()])
+        # for word in words.keys():
+        #     words[word][1] = words[word][0] / words_count
 
-# Подсчитывет слова в файлах подряд от first до last
-def files_word_counter(first, last):
-    res = []
-    for i in range(first, last):
-        res.append(word_counter(str(i)))
-    return res
+        return words
 
-
-# Собирает все слова в 1 общий словарь
-def word_grouper(word_dicts):
-    from collections import Counter
-
-    c = Counter()
-    for word_dict in word_dicts:
-        c.update(word_dict)
-    return c
-
-
-all_words = files_word_counter(100, 105)
-all_word_counts = word_grouper(all_words)
+    for text in text_modifier(file_count + 100):
+        result = word_counts(text)
+        yield result
 
 
-# Записывает в файл с номером, соответствующим номеру словаря в списке, слова
-# из соответствующего словаря через символ табуляции в формате word count
-def file_maker(word_dicts):
-    for file in range(len(word_dicts)):
-        with open(f'output/{file + 100}.txt', 'w+', encoding='UTF8') as res_file:
-            for key in word_dicts[file]:
-                res_file.write(key + '\t' + str(word_dicts[file][key]) + '\n')
-
-
-file_maker(all_words)
+for i in word_counter(2):
+    print(i)
