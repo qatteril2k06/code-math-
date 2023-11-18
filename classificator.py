@@ -57,3 +57,9 @@ def thematizer(pathtofiles, topicspath):
         result_file.write(namefile + '\t' + main_topic_flag + '\n')
 
 thematizer(path_to_files, path_to_themes)
+#with open(file_path, 'r', encoding='utf-8') as topic:
+            #     for word in terms_list:
+            #         if calculate_tf(word, topic.read()) * calculate_idf(word, topicspath) > word_value:
+            #             word_value = calculate_tf(word, topic.read()) * calculate_idf(word, topicspath)
+            #             main_topic_flag = filename
+#
