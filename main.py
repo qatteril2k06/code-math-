@@ -126,8 +126,9 @@ class MainWindow(GraphicsMW):
                 for line in text.split('\n'):
                     file.write(line)
             file_maker(word_counter('input_file/', ['input_file.txt']))
-        classificator(files_to_parse, themes)
+        classificator('files_to_parse/', 'themes/')
         with open('classification.txt', 'r') as file:
+            print(2)
             for line in file:
                 line = line.split()
                 parsed_themes.append(line[1])
@@ -355,6 +356,7 @@ class ClassificationWindow(QMainWindow):
         self.setCentralWidget(self.scroll)
 
         files_to_parse.clear()
+        parsed_themes.clear()
 
     def __init__(self):
         super().__init__()
