@@ -17,11 +17,11 @@ def calculate_tf(term, document):
 def calculate_idf(term, folder_path):
     all_documents = []
 
-    for filename in os.listdir(folder_path):
-        file_path = os.path.join(folder_path, filename)
+    for file_name in os.listdir(folder_path):
+        path_to_file = os.path.join(folder_path, file_name)
 
-        if os.path.isfile(file_path) and file_path.endswith('.txt'):
-            with open(file_path, 'r', encoding='UTF8') as file:
+        if os.path.isfile(path_to_file) and file_path.endswith('.txt'):
+            with open(path_to_file, 'r', encoding='UTF8') as file:
                 document = file.read()
                 all_documents.append(document)
 
@@ -52,7 +52,9 @@ def thematizer(pathtofile, topicspath):
     return main_topic_flag
 
 
-for filename in os.listdir(path_to_files):
-    file_path = os.path.join(path_to_files, filename)
+with open('classification.txt', 'w', encoding='utf-8') as result_file:
+    for name_of_file in os.listdir(path_to_files):
+        file_path = os.path.join(path_to_files, name_of_file)
+        final_theme = thematizer(file_path, path_to_themes)
+        result_file.write(name_of_file + '\t' + final_theme + '\n')
 
-#Разобраться как сделать папку и туда сохранять ответы 
