@@ -4,11 +4,7 @@ import math
 import random
 
 
-path_to_files = input()
-path_to_themes = input()
-
-
-def main(path_to_files, path_to_themes):
+def classificator(path_to_files, path_to_themes):
     def calculate_tf(term, document):
         words_in_document = document.split()
         term_count = words_in_document.count(term)
@@ -29,7 +25,6 @@ def main(path_to_files, path_to_themes):
         document_count_with_term = sum(1 for doc in all_documents if term in doc)
         total_documents = len(all_documents)
         return math.log((total_documents + 1) / (document_count_with_term + 1)) + 1
-
 
     def thematizer(pathtofiles, topicspath):
         result_file = open('classification.txt', 'w', encoding='utf-8')
@@ -52,5 +47,4 @@ def main(path_to_files, path_to_themes):
                         main_topic_flag = random.choice(themes)
             result_file.write(namefile + '\t' + main_topic_flag + '\n')
 
-
-thematizer(path_to_files, path_to_themes)
+    thematizer(path_to_files, path_to_themes)

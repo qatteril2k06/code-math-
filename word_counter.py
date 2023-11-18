@@ -1,6 +1,8 @@
+import pymorphy2
+from pymystem3 import Mystem
+
+
 def word_counter(goal_dir: str, filenames: list):
-    import pymorphy2
-    from pymystem3 import Mystem
 
     morph = pymorphy2.MorphAnalyzer()
     mystem = Mystem()

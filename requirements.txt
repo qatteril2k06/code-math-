@@ -1,0 +1,4 @@
+PyQt5~=5.15.4
+pymorphy2~=0.9.1
+setuptools~=49.2.1
+pymystem3~=0.2.0

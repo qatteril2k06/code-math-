@@ -7,12 +7,13 @@ from PyQt5.QtWidgets import (
     QApplication, QWidget,
     QLineEdit, QPushButton, QLabel,
     QDialog, QDialogButtonBox,
-    QVBoxLayout, QGridLayout, QHeaderView, QSizePolicy,
-    QScrollArea, QMainWindow, QFrame, QHBoxLayout, QInputDialog,
+    QVBoxLayout, QGridLayout, QSizePolicy,
+    QScrollArea, QMainWindow, QFrame, QHBoxLayout,
     QFileDialog
 )
 from math import ceil
 from word_counter import word_counter
+from classificator import classificator
 
 themes = next(os.walk('themes/'), (None, None, []))[2]
 
@@ -120,14 +121,16 @@ class MainWindow(GraphicsMW):
 
     def classify(self):
         text = self.text_input.text()
-        counted_words = []
         if text:
             with open('input_file/input_file.txt', 'w+', encoding='utf8') as file:
                 for line in text.split('\n'):
                     file.write(line)
-            counted_words.append(word_counter('input_file/', ['input_file.txt']))
-        counted_words.append(word_counter('files_to_parse/', files_to_parse))
-
+            file_maker(word_counter('input_file/', ['input_file.txt']))
+        classificator(files_to_parse, themes)
+        with open('classification.txt', 'r') as file:
+            for line in file:
+                line = line.split()
+                parsed_themes.append(line[1])
         self.classification_window = ClassificationWindow()
 
 
@@ -320,7 +323,7 @@ class ClassificationWindow(QMainWindow):
                            for i in range(len(files_to_parse))
                            for _ in range(files_in_raw)]
         themes_positions = [(i, 1)
-                            for i in range(len(files_to_parse))
+                            for i in range(len(parsed_themes))
                             for _ in range(files_in_raw)]
 
         for file_pos, theme_pos, filename, themename \
@@ -373,9 +376,29 @@ class ClassificationWindow(QMainWindow):
         self.show()
 
 
-if __name__ == '__main__':
-    app = QApplication(sys.argv)
-    wnd = MainWindow()
-    wnd.show()
+# Makes answers as files
+def file_maker(word_dicts: list):
+    for word_dict, filename in word_dicts:
+        with open(f'output/{filename}', 'w+', encoding='UTF8') as res_file:
+            for key in word_dict:
+                res_file.write(key + '\t' + str(word_dict[key]) + '\n')
 
-    sys.exit(app.exec())
+
+if __name__ == '__main__':
+    mode = input('mode: ')
+    all_words = []
+    if mode == 'task1':
+        start, end = int(input('start: ')), int(input('end: '))
+        all_words = word_counter('docs/utf8/', [i for i in range(start, end)])
+        file_maker(list(all_words))
+    elif mode == 'task2':
+        classificator('docs/utf8/', 'themes/')
+    elif mode == 'task3':
+        app = QApplication(sys.argv)
+        wnd = MainWindow()
+        wnd.show()
+
+        sys.exit(app.exec())
+    else:
+        print('Invalid mode')
+    print('Done!')
