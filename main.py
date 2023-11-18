@@ -7,12 +7,12 @@ from PyQt5.QtWidgets import (
     QApplication, QWidget,
     QLineEdit, QPushButton, QLabel,
     QDialog, QDialogButtonBox,
-    QTableWidget, QTableWidgetItem,
     QVBoxLayout, QGridLayout, QHeaderView, QSizePolicy,
     QScrollArea, QMainWindow, QFrame, QHBoxLayout, QInputDialog,
     QFileDialog
 )
 from math import ceil
+from word_counter import word_counter
 
 themes = next(os.walk('themes/'), (None, None, []))[2]
 
@@ -25,6 +25,7 @@ def files_to_parse_clean():
 
 files_to_parse_clean()
 files_to_parse = []
+parsed_themes = []
 
 
 class AskDialog(QDialog):
@@ -118,6 +119,15 @@ class MainWindow(GraphicsMW):
         self.themes_window = ThemesWindow()
 
     def classify(self):
+        text = self.text_input.text()
+        counted_words = []
+        if text:
+            with open('input_file/input_file.txt', 'w+', encoding='utf8') as file:
+                for line in text.split('\n'):
+                    file.write(line)
+            counted_words.append(word_counter('input_file/', ['input_file.txt']))
+        counted_words.append(word_counter('files_to_parse/', files_to_parse))
+
         self.classification_window = ClassificationWindow()
 
 
@@ -186,7 +196,8 @@ class FilesWindow(QMainWindow):
             try:
                 with open(path, encoding='utf8') as file:
                     text = file
-                if name in files_to_parse:
+                if name in files_to_parse or \
+                        name.split('.')[-1] != 'txt' and len(name.split('.')) > 1:
                     dlg = ErrorFileDialog()
                     dlg.exec()
                 else:
@@ -301,7 +312,65 @@ class ThemesWindow(QMainWindow):
 
 
 class ClassificationWindow(QMainWindow):
-    pass
+    def create_themes(self):
+        self.layout = QGridLayout()
+        self.setLayout(self.layout)
+        files_in_raw = 1
+        files_positions = [(i, 0)
+                           for i in range(len(files_to_parse))
+                           for _ in range(files_in_raw)]
+        themes_positions = [(i, 1)
+                            for i in range(len(files_to_parse))
+                            for _ in range(files_in_raw)]
+
+        for file_pos, theme_pos, filename, themename \
+                in zip(files_positions, themes_positions, files_to_parse, parsed_themes):
+            filename = QLabel(filename)
+            filename.setFont(QFont('Libel Suit', 15))
+            frame = QFrame()
+
+            hbox = QHBoxLayout(frame)
+            hbox.addWidget(filename)
+            self.layout.addWidget(frame, *file_pos)
+
+            themename = QLabel(themename)
+            themename.setFont(QFont('Libel Suit', 15))
+            frame = QFrame()
+
+            hbox = QHBoxLayout(frame)
+            hbox.addWidget(themename)
+            self.layout.addWidget(frame, *theme_pos)
+
+        self.widget = QWidget()
+        self.widget.setLayout(self.layout)
+
+        self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setWidget(self.widget)
+
+        self.setCentralWidget(self.scroll)
+
+        files_to_parse.clear()
+
+    def __init__(self):
+        super().__init__()
+
+        self.setGeometry(1000, 300, 200, 300)
+        self.setWindowTitle('Classification')
+
+        self.scroll = QScrollArea()
+
+        self.layout = QGridLayout()
+        self.setLayout(self.layout)
+        self.widget = QWidget()
+
+        self.create_themes()
+
+        self.initUI()
+
+    def initUI(self):
+        self.show()
 
 
 if __name__ == '__main__':
