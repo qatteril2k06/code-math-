@@ -56,4 +56,4 @@ def thematizer(pathtofiles, topicspath):
                         main_topic_flag = filename
         result_file.write(namefile + '\t' + main_topic_flag + '\n')
 
-thematizer()
+thematizer(path_to_files, path_to_themes)
