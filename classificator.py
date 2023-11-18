@@ -51,6 +51,7 @@ def thematizer(pathtofile, topicspath):
                     main_topic_flag = filename
     return main_topic_flag
 
+
 for filename in os.listdir(path_to_files):
     file_path = os.path.join(path_to_files, filename)
 
